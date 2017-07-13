@@ -21,7 +21,7 @@
 package com.esotericsoftware.deconz;
 
 /** @author Nathan Sweet */
-class DeCONZException extends Exception {
+public class DeCONZException extends Exception {
 	ErrorCode errorCode = ErrorCode.unknown;
 
 	public DeCONZException (String message) {

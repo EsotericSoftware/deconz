@@ -60,13 +60,13 @@ public class Light {
 		none, colorloop
 	}
 
-	static class LightAttributeChange extends Change<LightAttributeChange> {
+	static public class LightAttributeChange extends Change<LightAttributeChange> {
 		public LightAttributeChange name (String name) {
 			return append("name", name);
 		}
 	}
 
-	static class LightStateChange extends Change<LightStateChange> {
+	static public class LightStateChange extends Change<LightStateChange> {
 		public LightStateChange on () {
 			return comma("\"on\":true");
 		}

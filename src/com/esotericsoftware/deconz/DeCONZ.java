@@ -382,11 +382,13 @@ public class DeCONZ {
 			String request = "{\"devicetype\":\"" + appName + "\"";
 			if (userName != null) request += ",\"username\":\"" + userName + "\"";
 			apiKey = success(httpPost("", request + "}")).get(0).require("success").getString("username");
+			if (INFO) info("deconz", "API key registered: " + apiKey);
 			return apiKey;
 		}
 
 		public void deregister (String apiKey) throws DeCONZException {
 			success(httpDelete("config/whitelist/" + apiKey));
+			if (INFO) info("deconz", "API key deregistered: " + apiKey);
 		}
 
 		public Config getConfig () throws DeCONZException {
@@ -394,14 +396,17 @@ public class DeCONZ {
 		}
 
 		public String updateSoftware () throws DeCONZException {
+			if (INFO) info("deconz", "Performing software update.");
 			return success(httpPost("config/update", "")).get("success").child.asString();
 		}
 
 		public String updateFirmware () throws DeCONZException {
+			if (INFO) info("deconz", "Performing firmware update.");
 			return success(httpPost("config/updatefirmware", "")).get("success").child.asString();
 		}
 
 		public String resetGateway (boolean resetNetworkSettings, boolean deleteDatabase) throws DeCONZException {
+			if (INFO) info("deconz", "Reseting the gateway.");
 			return success(
 				httpPost("config/reset", "{\"resetGW\":" + resetNetworkSettings + "\",\"deleteDB\":" + deleteDatabase + "\"}"))
 					.get("success").child.asString();
@@ -410,10 +415,12 @@ public class DeCONZ {
 		public void changePassword (String userName, String oldHash, String newHash) throws DeCONZException {
 			success(httpPut("config/password",
 				"{\"username\":\"" + userName + "\",\"oldhash\":\"" + oldHash + "\",\"newhash\":\"" + newHash + "\"}"));
+			if (INFO) info("deconz", "Password changed: " + userName);
 		}
 
 		public void resetPassword () throws DeCONZException {
 			success(httpDelete("config/password"));
+			if (INFO) info("deconz", "Password reset.");
 		}
 
 		public FullState getFullState () throws DeCONZException {
@@ -447,7 +454,7 @@ public class DeCONZ {
 		}
 
 		public void apply (String groupID, LightStateChange change) throws DeCONZException {
-			success(httpPut("groups/" + groupID, "{" + change.buffer + "}"));
+			success(httpPut("groups/" + groupID + "/action", "{" + change.buffer + "}"));
 		}
 
 		public void delete (String groupID) throws DeCONZException {
@@ -763,7 +770,7 @@ public class DeCONZ {
 	static public void main (String[] args) throws Exception {
 		TRACE();
 		DeCONZ deconz = new DeCONZ("9FE426D925", "192.168.0.90", 80, 1);
-		deconz.getGateway().register("rpi-shelf", null, false);
+		deconz.getGateway().register("test app", null, false);
 
 		System.out.println("Lights:");
 		for (Light light : deconz.getLights().getAll())
