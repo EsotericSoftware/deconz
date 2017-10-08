@@ -57,6 +57,7 @@ import com.esotericsoftware.deconz.Sensor.CLIPSensorState;
 import com.esotericsoftware.deconz.Sensor.SensorAttributeChange;
 import com.esotericsoftware.deconz.Sensor.SensorConfig;
 import com.esotericsoftware.deconz.Sensor.SensorConfigChange;
+import com.esotericsoftware.deconz.Sensor.SensorState;
 import com.esotericsoftware.deconz.Sensor.SensorType;
 import com.esotericsoftware.deconz.Sensor.ZHASensorState;
 import com.esotericsoftware.deconz.WebsocketListener.WebsocketAdapter;
@@ -282,6 +283,7 @@ public class DeCONZ {
 				ErrorCode errorCode = findErrorCode(json);
 				DeCONZException ex = new DeCONZException("Response error, " + errorCode + ": " + json);
 				ex.errorCode = errorCode;
+				ex.errorResponse = json.get("error");
 				throw ex;
 			}
 			if (!json.has("success")) throw new DeCONZException("Response missing success: " + json);
@@ -291,6 +293,7 @@ public class DeCONZ {
 					ErrorCode errorCode = findErrorCode(json);
 					DeCONZException ex = new DeCONZException("Response error, " + errorCode + ": " + json);
 					ex.errorCode = errorCode;
+					ex.errorResponse = entry.get("error");
 					throw ex;
 				}
 				if (!entry.has("success")) throw new DeCONZException("Response missing success: " + json);
@@ -549,7 +552,8 @@ public class DeCONZ {
 		}
 
 		public void apply (String groupID, String sceneID, String lightID, SceneLightChange change) throws DeCONZException {
-			success(httpPut("groups/" + groupID + "/scenes/" + sceneID + "/lights/" + lightID, "{" + change.buffer + "}"));
+			success(
+				httpPut("groups/" + groupID + "/scenes/" + sceneID + "/lights/" + lightID + "/state", "{" + change.buffer + "}"));
 		}
 
 		public void store (String groupID, String sceneID) throws DeCONZException {
@@ -662,7 +666,7 @@ public class DeCONZ {
 
 	public class Websocket {
 		final CopyOnWriteArrayList<WebsocketListener> listeners = new CopyOnWriteArrayList();
-		private WebSocketClient socket;
+		private volatile WebSocketClient socket;
 		char[] buffer = new char[64];
 		final JsonReader jsonReader = new JsonReader();
 
@@ -692,27 +696,23 @@ public class DeCONZ {
 						}
 						if (TRACE) trace("deconz", "Websocket received: " + json);
 
-						String type = json.getString("t");
-						if (!type.equals("event")) {
-							if (DEBUG) debug("Unknown websocket message type: " + type);
-							return;
-						}
-
-						String eventType = json.getString("e");
-						if (!eventType.equals("changed")) {
-							if (DEBUG) debug("Unknown websocket event type: " + eventType);
-							return;
-						}
-
-						String resourceType = json.getString("r");
-						if (!resourceType.equals("sensors")) {
-							if (DEBUG) debug("Unknown websocket resource type: " + eventType);
-							return;
-						}
-
-						String id = json.getString("id");
 						for (WebsocketListener listener : listeners)
-							listener.sensorChanged(id);
+							listener.event(json);
+
+						if (json.getString("t").equals("event") && json.getString("e").equals("changed")
+							&& json.getString("r").equals("sensors")) {
+							SensorState state;
+							try {
+								state = toObject(json.get("state"), SensorState.class);
+							} catch (DeCONZException ex) {
+								if (ERROR) error("deconz", "Error parsing websocket sensor state change: " + json);
+								return;
+							}
+
+							String id = json.getString("id");
+							for (WebsocketListener listener : listeners)
+								listener.sensorChanged(id, state);
+						}
 					}
 
 					public void onClose (int code, String reason, boolean remote) {
@@ -738,6 +738,10 @@ public class DeCONZ {
 				socket.close();
 				socket = null;
 			}
+		}
+
+		public boolean isConnected () {
+			return socket != null;
 		}
 
 		public void addListener (WebsocketListener listener) {

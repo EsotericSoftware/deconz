@@ -20,9 +20,12 @@
 
 package com.esotericsoftware.deconz;
 
+import com.esotericsoftware.jsonbeans.JsonValue;
+
 /** @author Nathan Sweet */
 public class DeCONZException extends Exception {
 	ErrorCode errorCode = ErrorCode.unknown;
+	JsonValue errorResponse;
 
 	public DeCONZException (String message) {
 		super(message);
@@ -36,8 +39,14 @@ public class DeCONZException extends Exception {
 		super(message, cause);
 	}
 
+	/** @return May be null. */
 	public ErrorCode getErrorCode () {
 		return errorCode;
+	}
+
+	/** @return May be null. */
+	public JsonValue getErrorResponse () {
+		return errorResponse;
 	}
 
 	public enum ErrorCode {

@@ -22,13 +22,17 @@ package com.esotericsoftware.deconz;
 
 import static com.esotericsoftware.minlog.Log.*;
 
+import com.esotericsoftware.deconz.Sensor.SensorState;
+import com.esotericsoftware.jsonbeans.JsonValue;
 import com.esotericsoftware.minlog.Log;
 
 /** @author Nathan Sweet */
 public interface WebsocketListener {
 	void connected ();
 
-	void sensorChanged (String id);
+	void event (JsonValue event);
+
+	void sensorChanged (String id, SensorState state);
 
 	void disconnected (int code, String reason, boolean remote);
 
@@ -38,7 +42,10 @@ public interface WebsocketListener {
 		public void connected () {
 		}
 
-		public void sensorChanged (String id) {
+		public void event (JsonValue event) {
+		}
+
+		public void sensorChanged (String id, SensorState state) {
 		}
 
 		public void disconnected (int code, String reason, boolean remote) {

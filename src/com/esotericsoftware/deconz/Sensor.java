@@ -32,7 +32,7 @@ public class Sensor {
 	public String modelid;
 	public int mode;
 	public String name;
-	public SensorUpdateState state;
+	public SensorState state;
 	public String swversion;
 	public SensorType type;
 	public String uniqueid;
@@ -41,14 +41,19 @@ public class Sensor {
 		public boolean on;
 		public boolean reachable;
 		public int battery;
+		public int duration;
 	}
 
-	static public class SensorUpdateState {
+	static public class SensorState {
 		public String lastupdated;
+		public int buttonevent; // ZHASwitch
+		public int lux, lightlevel; // ZHALight
+		public boolean presence; // ZHAPresence
+		public int temperature; // ZHATemperature
 	}
 
 	public enum SensorType {
-		ZHASwitch, ZHALight, ZHAPresence, //
+		ZHASwitch, ZHALight, ZHAPresence, ZHATemperature, ZHALightLevel, //
 		CLIPSwitch, CLIPOpenClose, CLIPPresence, CLIPTemperature, CLIPGenericFlag, CLIPGenericStatus, CLIPHumidity
 	}
 
@@ -60,7 +65,7 @@ public class Sensor {
 		buttonevent, open, presence, temperature, flag, status, humidity
 	}
 
-	public class SensorAttributeChange extends Change<SensorAttributeChange> {
+	static public class SensorAttributeChange extends Change<SensorAttributeChange> {
 		public SensorAttributeChange name (String name) {
 			return append("name", name);
 		}
@@ -70,7 +75,7 @@ public class Sensor {
 		}
 	}
 
-	public class SensorConfigChange extends Change<SensorConfigChange> {
+	static public class SensorConfigChange extends Change<SensorConfigChange> {
 		public SensorConfigChange on (boolean on) {
 			return append("on", on);
 		}
