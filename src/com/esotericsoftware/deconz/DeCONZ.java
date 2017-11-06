@@ -87,7 +87,11 @@ public class DeCONZ {
 	char[] buffer = new char[2048];
 	int bufferSize = 0;
 	final JsonReader jsonReader = new JsonReader();
+
 	final Json json = new Json();
+	{
+		json.setIgnoreUnknownFields(true);
+	}
 
 	private final Gateway gateway = new Gateway();
 	private final Groups groups = new Groups();
@@ -103,6 +107,8 @@ public class DeCONZ {
 	 * @param restPort The default REST API port is 80.
 	 * @param connectionPoolSize The number of threads that can make HTTP requests concurrently. */
 	public DeCONZ (String apiKey, String host, int restPort, int connectionPoolSize) {
+		if (apiKey == null) throw new IllegalArgumentException("apiKey cannot be null.");
+		if (host == null) throw new IllegalArgumentException("host cannot be null.");
 		this.apiKey = apiKey;
 		this.host = host;
 		this.restPort = restPort;
@@ -112,12 +118,25 @@ public class DeCONZ {
 		connectionManager.setDefaultMaxPerRoute(connectionPoolSize);
 		http = HttpClients.custom().setConnectionManager(connectionManager).build();
 
-		json.setIgnoreUnknownFields(true);
+		if (DEBUG) debug("deconz", "API key: " + apiKey);
+	}
 
+	/** @param apiKey May be null.
+	 * @param restPort The default REST API port is 80. */
+	public DeCONZ (String apiKey, String host, int restPort, CloseableHttpClient http) {
+		if (apiKey == null) throw new IllegalArgumentException("apiKey cannot be null.");
+		if (host == null) throw new IllegalArgumentException("host cannot be null.");
+		if (http == null) throw new IllegalArgumentException("http cannot be null.");
+
+		this.apiKey = apiKey;
+		this.host = host;
+		this.restPort = restPort;
+		this.http = http;
 		if (DEBUG) debug("deconz", "API key: " + apiKey);
 	}
 
 	private String url (String path) throws DeCONZException {
+		if (path == null) throw new IllegalArgumentException("path cannot be null.");
 		String url = "http://" + host + ':' + restPort + "/api/";
 		if (!path.equals("")) {
 			if (apiKey == null) throw new DeCONZException("API user has not been registered.");
