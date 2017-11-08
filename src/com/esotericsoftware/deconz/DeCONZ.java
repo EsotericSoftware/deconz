@@ -718,19 +718,40 @@ public class DeCONZ {
 						for (WebsocketListener listener : listeners)
 							listener.event(json);
 
-						if (json.getString("t").equals("event") && json.getString("e").equals("changed")
-							&& json.getString("r").equals("sensors")) {
-							SensorState state;
-							try {
-								state = toObject(json.get("state"), SensorState.class);
-							} catch (DeCONZException ex) {
-								if (ERROR) error("deconz", "Error parsing websocket sensor state change: " + json);
-								return;
-							}
+						if (json.getString("t").equals("event")) {
+							String resource = json.getString("r", "");
+							String type = json.getString("e", "");
 
-							String id = json.getString("id");
-							for (WebsocketListener listener : listeners)
-								listener.sensorChanged(id, state);
+							JsonValue state = json.get("state");
+							if (state != null && type.equals("changed")) {
+								if (resource.equals("sensors")) {
+									SensorState sensorState;
+									try {
+										sensorState = toObject(state, SensorState.class);
+									} catch (DeCONZException ex) {
+										if (ERROR) error("deconz", "Error parsing websocket sensor state change: " + json);
+										return;
+									}
+									String id = json.getString("id");
+									for (WebsocketListener listener : listeners)
+										listener.sensorChanged(id, sensorState);
+								} else if (resource.equals("lights")) {
+									String id = json.getString("id");
+									boolean on = state.getBoolean("on", false);
+									for (WebsocketListener listener : listeners)
+										listener.lightChanged(id, on);
+								} else if (resource.equals("groups")) {
+									String id = json.getString("id");
+									boolean on = state.getBoolean("any_on", false);
+									for (WebsocketListener listener : listeners)
+										listener.groupChanged(id, on);
+								}
+							} else if (type.equals("scene-called") && resource.equals("scenes")) {
+								String groupID = json.getString("gid");
+								String sceneID = json.getString("scid");
+								for (WebsocketListener listener : listeners)
+									listener.sceneCalled(groupID, sceneID);
+							}
 						}
 					}
 

@@ -28,15 +28,21 @@ import com.esotericsoftware.minlog.Log;
 
 /** @author Nathan Sweet */
 public interface WebsocketListener {
-	void connected ();
+	public void connected ();
 
-	void event (JsonValue event);
+	public void event (JsonValue event);
 
-	void sensorChanged (String id, SensorState state);
+	public void groupChanged (String groupID, boolean anyOn);
 
-	void disconnected (int code, String reason, boolean remote);
+	public void sceneCalled (String groupID, String sceneID);
 
-	void error (Exception ex);
+	public void lightChanged (String lightID, boolean on);
+
+	public void sensorChanged (String sensorID, SensorState state);
+
+	public void disconnected (int code, String reason, boolean remote);
+
+	public void error (Exception ex);
 
 	static public class WebsocketAdapter implements WebsocketListener {
 		public void connected () {
@@ -45,7 +51,16 @@ public interface WebsocketListener {
 		public void event (JsonValue event) {
 		}
 
-		public void sensorChanged (String id, SensorState state) {
+		public void groupChanged (String groupID, boolean anyOn) {
+		}
+
+		public void sceneCalled (String groupID, String sceneID) {
+		}
+
+		public void lightChanged (String lightID, boolean on) {
+		}
+
+		public void sensorChanged (String sensorID, SensorState state) {
 		}
 
 		public void disconnected (int code, String reason, boolean remote) {
