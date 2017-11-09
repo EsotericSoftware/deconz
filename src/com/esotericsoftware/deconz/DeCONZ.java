@@ -64,6 +64,7 @@ import com.esotericsoftware.deconz.WebsocketListener.WebsocketAdapter;
 import com.esotericsoftware.jsonbeans.Json;
 import com.esotericsoftware.jsonbeans.JsonReader;
 import com.esotericsoftware.jsonbeans.JsonValue;
+import com.esotericsoftware.jsonbeans.OutputType;
 
 import shaded.org.apache.http.HttpEntity;
 import shaded.org.apache.http.client.methods.CloseableHttpResponse;
@@ -238,7 +239,12 @@ public class DeCONZ {
 				}
 				if (bufferSize == 0) throw new DeCONZException("Empty REST response.");
 				if (json == null) throw new DeCONZException("Null REST response: " + new String(buffer, 0, bufferSize));
-				if (TRACE) trace("deconz", "REST response: " + json);
+				if (TRACE) {
+					String text = json.prettyPrint(OutputType.minimal, 130);
+					if (text.startsWith("[\n{\n\t")) text = "[{ " + text.substring(5, text.length());
+					if (text.endsWith("\n}\n]")) text = text.substring(0, text.length() - 4) + " }]";
+					trace("deconz", "REST response: " + text);
+				}
 				return json;
 			}
 		} finally {
@@ -713,7 +719,6 @@ public class DeCONZ {
 							Websocket.this.close();
 							return;
 						}
-						if (TRACE) trace("deconz", "Websocket received: " + json);
 
 						for (WebsocketListener listener : listeners)
 							listener.event(json);
