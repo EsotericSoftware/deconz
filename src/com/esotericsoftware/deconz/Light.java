@@ -81,22 +81,42 @@ public class Light {
 
 		/** @param brightness 0 to 1 */
 		public LightStateChange brightness (float brightness) {
-			return append("bri", (int)clamp(brightness * 255, 0, 255));
+			return brightness((int)clamp(brightness * 255, 0, 255));
+		}
+
+		/** @param brightness 0 to 255 */
+		public LightStateChange brightness (int brightness) {
+			return append("bri", (int)clamp(brightness, 0, 255));
 		}
 
 		/** @param degrees 0 to 360 */
 		public LightStateChange hue (float degrees) {
-			return append("hue", (int)clamp(degrees / 360 * 65535, 0, 65535));
+			return hue((int)clamp(degrees / 360 * 65535, 0, 65535));
 		}
 
-		/** @param saturation 0 to 1 */
-		public LightStateChange saturation (float saturation) {
-			return append("sat", (int)clamp(saturation, 0, 1));
+		/** @param hue 0 to 65535 */
+		public LightStateChange hue (int hue) {
+			return append("hue", clamp(hue, 0, 65535));
+		}
+
+		/** @param percent 0 to 1 */
+		public LightStateChange saturation (float percent) {
+			return saturation((int)clamp(percent, 0, 1) * 255);
+		}
+
+		/** @param saturation 0 to 255 */
+		public LightStateChange saturation (int saturation) {
+			return append("sat", saturation);
 		}
 
 		/** @param kelvin 2000 to 6500 */
 		public LightStateChange kelvin (int kelvin) {
-			return append("ct", clamp(1000000 / kelvin, 153, 500));
+			return colorTemp(clamp(1000000 / kelvin, 153, 500));
+		}
+
+		/** @param temp 153 to 500 */
+		public LightStateChange colorTemp (int temp) {
+			return append("ct", clamp(temp, 153, 500));
 		}
 
 		/** @param x 0 to 1
