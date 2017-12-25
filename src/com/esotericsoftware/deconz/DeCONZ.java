@@ -40,6 +40,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import com.esotericsoftware.deconz.DeCONZException.ErrorCode;
 import com.esotericsoftware.deconz.Group.GroupAttributeChange;
 import com.esotericsoftware.deconz.Group.GroupAttributes;
+import com.esotericsoftware.deconz.Group.GroupSceneAttributes;
 import com.esotericsoftware.deconz.Light.LightAttributeChange;
 import com.esotericsoftware.deconz.Light.LightStateChange;
 import com.esotericsoftware.deconz.Rule.RuleAction;
@@ -91,6 +92,7 @@ public class DeCONZ {
 
 	final Json json = new Json();
 	{
+		json.setTypeName(null);
 		json.setIgnoreUnknownFields(true);
 	}
 
@@ -108,7 +110,6 @@ public class DeCONZ {
 	 * @param restPort The default REST API port is 80.
 	 * @param connectionPoolSize The number of threads that can make HTTP requests concurrently. */
 	public DeCONZ (String apiKey, String host, int restPort, int connectionPoolSize) {
-		if (apiKey == null) throw new IllegalArgumentException("apiKey cannot be null.");
 		if (host == null) throw new IllegalArgumentException("host cannot be null.");
 		this.apiKey = apiKey;
 		this.host = host;
@@ -136,11 +137,15 @@ public class DeCONZ {
 		if (DEBUG) debug("deconz", "API key: " + apiKey);
 	}
 
+	public void setApiKey (String apiKey) {
+		this.apiKey = apiKey;
+	}
+
 	private String url (String path) throws DeCONZException {
 		if (path == null) throw new IllegalArgumentException("path cannot be null.");
 		String url = "http://" + host + ':' + restPort + "/api/";
 		if (!path.equals("")) {
-			if (apiKey == null) throw new DeCONZException("API user has not been registered.");
+			if (apiKey == null) throw new DeCONZException("API key has not been registered.");
 			url += apiKey + '/';
 			if (path.equals("/")) return url;
 		}
@@ -403,9 +408,10 @@ public class DeCONZ {
 	// ---
 
 	public class Gateway {
-		/** @param userName May be null. */
-		public String register (String appName, String userName, boolean reset) throws DeCONZException {
-			if (reset) apiKey = null;
+		/** Registers a new API key. If an API key has been {@link DeCONZ#setApiKey(String) set}, it is returned. Otherwise a new
+		 * API key is registered.
+		 * @param userName May be null to use a randomly generated API key. */
+		public String register (String appName, String userName) throws DeCONZException {
 			if (apiKey != null) return apiKey;
 			String request = "{\"devicetype\":\"" + appName + "\"";
 			if (userName != null) request += ",\"username\":\"" + userName + "\"";
@@ -478,11 +484,11 @@ public class DeCONZ {
 		}
 
 		public void apply (String groupID, GroupAttributeChange change) throws DeCONZException {
-			success(httpPut("groups/" + groupID, "{" + change.buffer + "}"));
+			success(httpPut("groups/" + groupID, "{" + change + "}"));
 		}
 
 		public void apply (String groupID, LightStateChange change) throws DeCONZException {
-			success(httpPut("groups/" + groupID + "/action", "{" + change.buffer + "}"));
+			success(httpPut("groups/" + groupID + "/action", "{" + change + "}"));
 		}
 
 		public void delete (String groupID) throws DeCONZException {
@@ -500,11 +506,11 @@ public class DeCONZ {
 		}
 
 		public void apply (String lightID, LightAttributeChange change) throws DeCONZException {
-			success(httpPut("lights/" + lightID, "{" + change.buffer + "}"));
+			success(httpPut("lights/" + lightID, "{" + change + "}"));
 		}
 
 		public void apply (String lightID, LightStateChange change) throws DeCONZException {
-			success(httpPut("lights/" + lightID + "/state", "{" + change.buffer + "}"));
+			success(httpPut("lights/" + lightID + "/state", "{" + change + "}"));
 		}
 
 		public void delete (String lightID) throws DeCONZException {
@@ -551,7 +557,7 @@ public class DeCONZ {
 		}
 
 		public void apply (String ruleID, RuleAttributeChange change) throws DeCONZException {
-			success(httpPut("rules/" + ruleID, "{" + change.buffer + "}"));
+			success(httpPut("rules/" + ruleID, "{" + change + "}"));
 		}
 
 		public void delete (String ruleID) throws DeCONZException {
@@ -565,7 +571,7 @@ public class DeCONZ {
 		}
 
 		public ArrayList<Scene> getAll (String groupID) throws DeCONZException {
-			return toList(httpGet("group/" + groupID + "/scenes"), Scene.class, "id");
+			return toList(httpGet("groups/" + groupID + "/scenes"), Scene.class, "id");
 		}
 
 		public SceneAttributes get (String groupID, String sceneID) throws DeCONZException {
@@ -573,12 +579,11 @@ public class DeCONZ {
 		}
 
 		public void apply (String groupID, String sceneID, SceneAttributeChange change) throws DeCONZException {
-			success(httpPut("groups/" + groupID + "/scenes/" + sceneID, "{" + change.buffer + "}"));
+			success(httpPut("groups/" + groupID + "/scenes/" + sceneID, "{" + change + "}"));
 		}
 
 		public void apply (String groupID, String sceneID, String lightID, SceneLightChange change) throws DeCONZException {
-			success(
-				httpPut("groups/" + groupID + "/scenes/" + sceneID + "/lights/" + lightID + "/state", "{" + change.buffer + "}"));
+			success(httpPut("groups/" + groupID + "/scenes/" + sceneID + "/lights/" + lightID + "/state", "{" + change + "}"));
 		}
 
 		public void store (String groupID, String sceneID) throws DeCONZException {
@@ -615,7 +620,7 @@ public class DeCONZ {
 		}
 
 		public void apply (String scheduleID, ScheduleAttributeChange change) throws DeCONZException {
-			success(httpPut("schedules/" + scheduleID, "{" + change.buffer + "}"));
+			success(httpPut("schedules/" + scheduleID, "{" + change + "}"));
 		}
 
 		public void delete (String scheduleID) throws DeCONZException {
@@ -645,11 +650,11 @@ public class DeCONZ {
 		}
 
 		public void apply (String sensorID, SensorAttributeChange change) throws DeCONZException {
-			success(httpPut("sensors/" + sensorID, "{" + change.buffer + "}"));
+			success(httpPut("sensors/" + sensorID, "{" + change + "}"));
 		}
 
 		public void apply (String sensorID, SensorConfigChange change) throws DeCONZException {
-			success(httpPut("sensors/" + sensorID + "/config", "{" + change.buffer + "}"));
+			success(httpPut("sensors/" + sensorID + "/config", "{" + change + "}"));
 		}
 
 		public void setState (String sensorID, CLIPSensorState clipState, int value) throws DeCONZException {
@@ -730,6 +735,7 @@ public class DeCONZ {
 							JsonValue state = json.get("state");
 							if (state != null && type.equals("changed")) {
 								if (resource.equals("sensors")) {
+									System.out.println(json);
 									SensorState sensorState;
 									try {
 										sensorState = toObject(state, SensorState.class);
@@ -819,7 +825,8 @@ public class DeCONZ {
 	static public void main (String[] args) throws Exception {
 		TRACE();
 		DeCONZ deconz = new DeCONZ("9FE426D925", "192.168.0.90", 80, 1);
-		deconz.getGateway().register("test app", null, false);
+		String apiKey = deconz.getGateway().register("test app", null);
+		deconz.setApiKey(apiKey);
 
 		System.out.println("Lights:");
 		for (Light light : deconz.getLights().getAll())

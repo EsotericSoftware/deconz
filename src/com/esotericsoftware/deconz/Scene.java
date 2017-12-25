@@ -67,7 +67,22 @@ public class Scene {
 
 		/** @param brightness 0 to 1 */
 		public SceneLightChange brightness (float brightness) {
-			return append("bri", (int)clamp(brightness * 255, 0, 255));
+			return brightness((int)clamp(brightness * 255, 0, 255));
+		}
+
+		/** @param brightness 0 to 255 */
+		public SceneLightChange brightness (int brightness) {
+			return append("bri", (int)clamp(brightness, 0, 255));
+		}
+
+		/** @param kelvin 2000 to 6500 */
+		public SceneLightChange kelvin (int kelvin) {
+			return colorTemp(clamp(1000000 / kelvin, 153, 500));
+		}
+
+		/** @param temp 153 to 500 */
+		public SceneLightChange colorTemp (int temp) {
+			return append("ct", clamp(temp, 153, 500));
 		}
 
 		/** @param x 0 to 1

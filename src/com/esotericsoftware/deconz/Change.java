@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 /** @author Nathan Sweet */
 public class Change<T extends Change> {
-	final StringBuilder buffer = new StringBuilder();
+	protected final StringBuilder buffer = new StringBuilder();
 
 	public void reset () {
 		buffer.setLength(0);
@@ -81,5 +81,9 @@ public class Change<T extends Change> {
 			buffer.append('\"');
 		}
 		return (T)this;
+	}
+
+	public String toString () {
+		return buffer.toString();
 	}
 }

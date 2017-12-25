@@ -40,7 +40,14 @@ public class Group {
 		public ArrayList<String> lightsequence;
 		public ArrayList<String> mulitdeviceids;
 		public String name;
-		public ArrayList<String> scenes; // BOZO
+		public ArrayList<GroupSceneAttributes> scenes;
+	}
+
+	static public class GroupSceneAttributes {
+		public String id;
+		public int lightcount;
+		public String name;
+		public int transitiontime;
 	}
 
 	static public class GroupAction {
