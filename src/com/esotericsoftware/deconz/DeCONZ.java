@@ -735,7 +735,6 @@ public class DeCONZ {
 							JsonValue state = json.get("state");
 							if (state != null && type.equals("changed")) {
 								if (resource.equals("sensors")) {
-									System.out.println(json);
 									SensorState sensorState;
 									try {
 										sensorState = toObject(state, SensorState.class);
