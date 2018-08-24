@@ -40,7 +40,6 @@ import org.java_websocket.handshake.ServerHandshake;
 import com.esotericsoftware.deconz.DeCONZException.ErrorCode;
 import com.esotericsoftware.deconz.Group.GroupAttributeChange;
 import com.esotericsoftware.deconz.Group.GroupAttributes;
-import com.esotericsoftware.deconz.Group.GroupSceneAttributes;
 import com.esotericsoftware.deconz.Light.LightAttributeChange;
 import com.esotericsoftware.deconz.Light.LightStateChange;
 import com.esotericsoftware.deconz.Rule.RuleAction;
@@ -747,14 +746,18 @@ public class DeCONZ {
 										listener.sensorChanged(id, sensorState);
 								} else if (resource.equals("lights")) {
 									String id = json.getString("id");
-									boolean on = state.getBoolean("on", false);
-									for (WebsocketListener listener : listeners)
-										listener.lightChanged(id, on);
+									if (state.has("on")) {
+										boolean on = state.getBoolean("on");
+										for (WebsocketListener listener : listeners)
+											listener.lightChanged(id, on);
+									}
 								} else if (resource.equals("groups")) {
 									String id = json.getString("id");
-									boolean on = state.getBoolean("any_on", false);
-									for (WebsocketListener listener : listeners)
-										listener.groupChanged(id, on);
+									if (state.has("any_on")) {
+										boolean on = state.getBoolean("any_on");
+										for (WebsocketListener listener : listeners)
+											listener.groupChanged(id, on);
+									}
 								}
 							} else if (type.equals("scene-called") && resource.equals("scenes")) {
 								String groupID = json.getString("gid");

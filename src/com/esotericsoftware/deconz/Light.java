@@ -131,6 +131,11 @@ public class Light {
 			return this;
 		}
 
+		public LightStateChange rgb (float r, float g, float b, String model) {
+			float[] xy = ColorUtil.rgbToCie(r, g, b, model);
+			return cie(xy[0], xy[1]);
+		}
+
 		public LightStateChange alert (LightAlert alert) {
 			return append("alert", alert.name());
 		}
