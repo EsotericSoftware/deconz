@@ -46,7 +46,7 @@ public class Sensor {
 
 	static public class SensorState {
 		public String lastupdated;
-		public int buttonevent; // ZHASwitch
+		public String buttonevent; // ZHASwitch
 		public int lux, lightlevel; // ZHALight
 		public boolean presence; // ZHAPresence
 		public int temperature; // ZHATemperature
@@ -54,7 +54,8 @@ public class Sensor {
 
 	public enum SensorType {
 		ZHASwitch, ZHALight, ZHAPresence, ZHATemperature, ZHALightLevel, //
-		CLIPSwitch, CLIPOpenClose, CLIPPresence, CLIPTemperature, CLIPGenericFlag, CLIPGenericStatus, CLIPHumidity
+		CLIPSwitch, CLIPOpenClose, CLIPPresence, CLIPTemperature, CLIPGenericFlag, CLIPGenericStatus, CLIPHumidity, //
+		Daylight
 	}
 
 	public enum ZHASensorState {
