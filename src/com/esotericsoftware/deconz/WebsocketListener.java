@@ -67,7 +67,6 @@ public interface WebsocketListener {
 		}
 
 		public void error (Exception ex) {
-			if (ERROR) Log.error("A websocket error occurred.", ex);
 		}
 	}
 }

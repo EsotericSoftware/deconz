@@ -771,14 +771,18 @@ public class DeCONZ {
 					public void onClose (int code, String reason, boolean remote) {
 						if (INFO)
 							info("deconz", "Websocket disconnected: " + code + ", " + reason + ", " + (remote ? "remote" : "local"));
+						Websocket.this.close();
 						for (WebsocketListener listener : listeners)
-							listener.connected();
+							listener.disconnected(code, reason, remote);
 					}
 
 					public void onError (Exception ex) {
 						if (ERROR) error("deconz", "Websocket error.", ex);
+						for (WebsocketListener listener : listeners)
+							listener.error(ex);
 					}
 				};
+				socket.setConnectionLostTimeout(15);
 				socket.connect();
 			} catch (URISyntaxException ex) {
 				throw new DeCONZException("Invalid URL.", ex);
